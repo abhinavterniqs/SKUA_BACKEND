@@ -19,6 +19,9 @@ urlpatterns = [
     # API Router
     path('api/', include(router.urls)),
     
+    # Agent API
+    path('api/agent/', include('agent_api.urls')),
+    
     # Auth Endpoint
     path('api/auth/login/', AdminLoginView.as_view(), name='auth_login'),
     

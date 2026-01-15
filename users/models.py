@@ -2,6 +2,12 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from adminpanel.models import Role, Department
+import secrets
+import string
+
+def generate_agent_code():
+    chars = string.ascii_uppercase + string.digits
+    return ''.join(secrets.choice(chars) for _ in range(12))
 
 class UserManager(BaseUserManager):
     def create_user(self, email, username, password=None, **extra_fields):
@@ -38,6 +44,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(max_length=150, blank=True)
     last_name = models.CharField(max_length=150, blank=True)
     mobile = models.CharField(max_length=20, blank=True)
+    agent_code = models.CharField(max_length=12, unique=True, default=generate_agent_code, null=True, blank=True)
     
     # Relationships
     role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True, blank=True, related_name='users')

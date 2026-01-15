@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     # Local Apps
     'users',
     'adminpanel',
+    'agent_api',
 ]
 
 MIDDLEWARE = [
