@@ -12,6 +12,8 @@ from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
+
+
 class EnrollAgentView(views.APIView):
     permission_classes = [permissions.AllowAny]
 
@@ -45,6 +47,13 @@ class EnrollAgentView(views.APIView):
                 }
             )
             
+            # If created or (optional) even if existing, ensure defaults are set if missing.
+            # We only strictly asked to populate defaults, let's do it on creation or if empty.
+            # If created or (optional) even if existing, ensure defaults are set if missing.
+            # We only strictly asked to populate defaults, let's do it on creation or if empty.
+            if created:
+                agent.save()
+            
             return Response({
                 "success": True,
                 "user_id": user.id,
@@ -58,6 +67,7 @@ class AgentBaseView(views.APIView):
     permission_classes = [permissions.AllowAny] # We use custom param auth
 
     def get_agent(self, request):
+        """Returns specific agent or None"""
         if request.method in ['POST', 'PUT', 'PATCH']:
             system_id = request.data.get('system_id')
             user_id = request.data.get('user_id')
@@ -69,55 +79,33 @@ class AgentBaseView(views.APIView):
             return None
         
         try:
-            agent = Agent.objects.get(system_id=system_id, user__id=user_id, is_active=True)
-            return agent
+            return Agent.objects.get(system_id=system_id, user__id=user_id, is_active=True)
         except Agent.DoesNotExist:
             return None
 
-class ConfigView(AgentBaseView):
-    @extend_schema(
-        parameters=[
-            OpenApiParameter("user_id", OpenApiTypes.INT, location=OpenApiParameter.QUERY, required=True),
-            OpenApiParameter("system_id", OpenApiTypes.STR, location=OpenApiParameter.QUERY, required=True),
-        ],
-        responses={200: OpenApiTypes.OBJECT}
-    )
-    def get(self, request):
-        agent = self.get_agent(request)
-        if not agent:
-            return Response({"error": "Unauthorized"}, status=status.HTTP_401_UNAUTHORIZED)
-        
-        return Response(agent.config_override)
-
-class TelemetryView(AgentBaseView):
-    @extend_schema(request=TelemetrySerializer, responses={201: None})
-    def post(self, request):
-        agent = self.get_agent(request)
-        if not agent:
-            return Response({"error": "Unauthorized"}, status=status.HTTP_401_UNAUTHORIZED)
-        
-        raw_data = request.data
-        if 'data' not in raw_data:
-             return Response({"error": "Missing telemetry data"}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Update last seen
-        agent.last_seen = timezone.now()
-        agent.save()
-
-        # Create Log
-        ts_val = raw_data.get('timestamp')
-        if ts_val:
-            ts = datetime.fromisoformat(ts_val.replace("Z", "+00:00"))
+    def get_agents(self, request):
+        """Returns list of agents based on params. Handles bulk user update if system_id missing."""
+        if request.method in ['POST', 'PUT', 'PATCH']:
+            system_id = request.data.get('system_id')
+            user_id = request.data.get('user_id')
         else:
-            ts = timezone.now()
+            system_id = request.query_params.get('system_id')
+            user_id = request.query_params.get('user_id')
 
-        TelemetryLog.objects.create(
-            agent=agent,
-            timestamp=ts,
-            data=raw_data.get('data')
-        )
-        
-        return Response({"status": "received"}, status=status.HTTP_201_CREATED)
+        if not user_id:
+            return []
+
+        if system_id:
+            try:
+                agent = Agent.objects.get(system_id=system_id, user__id=user_id, is_active=True)
+                return [agent]
+            except Agent.DoesNotExist:
+                return []
+        else:
+            # Bulk update for user
+            return list(Agent.objects.filter(user__id=user_id, is_active=True))
+
+# TelemetryView removed as per request
 
 class HeartbeatView(AgentBaseView):
     @extend_schema(request=HeartbeatSerializer, responses={200: None})

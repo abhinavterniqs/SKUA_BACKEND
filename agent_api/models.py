@@ -12,7 +12,9 @@ class Agent(models.Model):
     last_seen = models.DateTimeField(default=timezone.now)
     
     # Store per-agent configuration overrides here
-    config_override = models.JSONField(default=dict, blank=True)
+    # Store per-agent configuration overrides here
+    daily_config = models.JSONField(default=dict, blank=True)
+    monthly_config = models.JSONField(default=dict, blank=True)
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
