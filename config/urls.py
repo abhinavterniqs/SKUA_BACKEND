@@ -22,6 +22,9 @@ urlpatterns = [
     # Agent API
     path('api/agent/', include('agent_api.urls')),
     
+    # Todos API
+    path('', include('todos.urls')),
+    
     # Auth Endpoint
     path('api/auth/login/', AdminLoginView.as_view(), name='auth_login'),
     
