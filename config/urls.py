@@ -5,13 +5,14 @@ from django.conf.urls.static import static
 from rest_framework.routers import DefaultRouter
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
-from adminpanel.views import RoleViewSet, DepartmentViewSet, AdminLoginView
+from adminpanel.views import RoleViewSet, DepartmentViewSet, AdminLoginView, AgentViewSet
 from users.views import UserViewSet
 
 router = DefaultRouter()
 router.register(r'roles', RoleViewSet, basename='roles')
 router.register(r'departments', DepartmentViewSet, basename='departments')
 router.register(r'users', UserViewSet, basename='users')
+router.register(r'agents', AgentViewSet, basename='agents')
 
 urlpatterns = [
     path('admin/', admin.site.urls),

@@ -4,8 +4,13 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from drf_spectacular.utils import extend_schema, extend_schema_view
 
 from .models import Role, Department
-from .serializers import RoleSerializer, DepartmentSerializer, CustomTokenObtainPairSerializer
 from .permissions import IsAdmin
+from agent_api.models import Agent
+from agent_api.models_activity import DailyActivity, MonthlyActivity
+from .serializers import (
+    RoleSerializer, DepartmentSerializer, CustomTokenObtainPairSerializer,
+    AgentSerializer, AgentDetailSerializer
+)
 
 @extend_schema_view(
     post=extend_schema(summary="Admin Login", tags=["Auth"]),
@@ -78,3 +83,24 @@ class DepartmentViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
         return super().destroy(request, *args, **kwargs)
+
+@extend_schema_view(
+    list=extend_schema(summary="List all agents", tags=["Agents"]),
+    retrieve=extend_schema(summary="Get agent details inc. activities", tags=["Agents"]),
+)
+class AgentViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    ReadOnly viewset for Agents.
+    'list' returns summary.
+    'retrieve' returns full details including nested activities.
+    """
+    queryset = Agent.objects.all().select_related('user', 'user__role', 'user__department')
+    serializer_class = AgentSerializer
+    permission_classes = [IsAdmin] 
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['system_id', 'hostname', 'user__username', 'user__email']
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return AgentDetailSerializer
+        return AgentSerializer
