@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from .models import Role, Department
+from .models import Role, Department, Location
 from users.models import User
 from agent_api.models import Agent
 from agent_api.models_activity import DailyActivity, MonthlyActivity
@@ -13,6 +13,11 @@ class RoleSerializer(serializers.ModelSerializer):
 class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Department
+        fields = '__all__'
+
+class LocationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Location
         fields = '__all__'
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -40,7 +45,8 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             "mobile": user.mobile,
             "role": user.role.name if user.role else None,
             "is_active": user.is_active,
-            "department": user.department.name if user.department else None, # Include department name
+            "department": user.department.name if user.department else None,
+            "location": user.location.name if user.location else None,
             "profile_pic_url": profile_pic_url
         }
         

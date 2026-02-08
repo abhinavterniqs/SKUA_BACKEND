@@ -5,12 +5,13 @@ from django.conf.urls.static import static
 from rest_framework.routers import DefaultRouter
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
-from adminpanel.views import RoleViewSet, DepartmentViewSet, AdminLoginView, AgentViewSet
-from users.views import UserViewSet
+from adminpanel.views import RoleViewSet, DepartmentViewSet, LocationViewSet, AdminLoginView, AgentViewSet
+from users.views import UserViewSet, ForgotPasswordView, VerifyOTPView, ResetPasswordView
 
 router = DefaultRouter()
 router.register(r'roles', RoleViewSet, basename='roles')
 router.register(r'departments', DepartmentViewSet, basename='departments')
+router.register(r'locations', LocationViewSet, basename='locations')
 router.register(r'users', UserViewSet, basename='users')
 router.register(r'agents', AgentViewSet, basename='agents')
 
@@ -28,6 +29,9 @@ urlpatterns = [
     
     # Auth Endpoint
     path('api/auth/login/', AdminLoginView.as_view(), name='auth_login'),
+    path('api/auth/forgot-password/', ForgotPasswordView.as_view(), name='forgot_password'),
+    path('api/auth/verify-otp/', VerifyOTPView.as_view(), name='verify_otp'),
+    path('api/auth/reset-password/', ResetPasswordView.as_view(), name='reset_password'),
     
     # Swagger / OpenAPI
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),

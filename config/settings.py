@@ -70,7 +70,7 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -208,3 +208,13 @@ CORS_ALLOW_HEADERS = [
 
 # Allow preflight requests
 CORS_PREFLIGHT_MAX_AGE = 86400
+
+# Email Configuration
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'terniqs.leo@gmail.com'
+EMAIL_HOST_PASSWORD = 'bwzjzqibuyxqimpa'
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

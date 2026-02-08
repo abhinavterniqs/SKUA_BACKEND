@@ -13,7 +13,7 @@ class DailyActivity(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     
     # Stores the aggregated daily data
-    # Structure based on user_activity, application_usage, etc.
+    # Structure based on user_activity, application_usage, memory_usage, disk_monitoring, etc.
     data = models.JSONField(default=dict)
 
     class Meta:

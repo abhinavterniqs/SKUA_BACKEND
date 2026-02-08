@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import User
-from adminpanel.serializers import RoleSerializer, DepartmentSerializer
+from adminpanel.serializers import RoleSerializer, DepartmentSerializer, LocationSerializer
 
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -9,7 +9,7 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             'id', 'first_name', 'last_name', 'username', 'email', 
-            'password', 'mobile', 'profile_pic', 'department', 'role', 
+            'password', 'mobile', 'profile_pic', 'department', 'role', 'location', 
             'is_active', 'created_by', 'created_at', 'updated_at'
         ]
         read_only_fields = ['created_by', 'created_at', 'updated_at']
@@ -41,3 +41,24 @@ class UserSerializer(serializers.ModelSerializer):
         # Leaving as ID for now to match input structure, but could expand.
         ret = super().to_representation(instance)
         return ret
+
+
+class ForgotPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+
+class VerifyOTPSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    otp = serializers.CharField(max_length=6)
+
+
+class ResetPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    otp = serializers.CharField(max_length=6)
+    password = serializers.CharField(min_length=8)
+    confirm_password = serializers.CharField(min_length=8)
+
+    def validate(self, data):
+        if data['password'] != data['confirm_password']:
+            raise serializers.ValidationError({"password": "Passwords do not match."})
+        return data

@@ -19,6 +19,7 @@ class TaskSerializer(serializers.ModelSerializer):
     # New Fields
     isRunning = serializers.BooleanField(source='is_running', required=False)
     lastStartedAt = serializers.DateTimeField(source='last_started_at', required=False, allow_null=True)
+    userId = serializers.IntegerField(source='user_id', read_only=True)
     
     isExpanded = serializers.SerializerMethodField()
 
@@ -27,7 +28,7 @@ class TaskSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'parentId', 'title', 'description', 'category', 'status',
             'timeSpent', 'startTime', 'endTime', 'createdAt', 'subtasks', 'isExpanded',
-            'isRunning', 'lastStartedAt'
+            'isRunning', 'lastStartedAt', 'userId'
         ]
         extra_kwargs = {
             'id': {'read_only': True},
@@ -83,3 +84,27 @@ class TaskSerializer(serializers.ModelSerializer):
              instance.time_spent = validated_data['time_spent']
 
         return super().update(instance, validated_data)
+
+class FlatTaskSerializer(serializers.ModelSerializer):
+    userId = serializers.IntegerField(source='user_id', read_only=True)
+    parentId = serializers.PrimaryKeyRelatedField(source='parent', read_only=True)
+    timeSpent = serializers.IntegerField(source='time_spent', read_only=True)
+    startTime = serializers.TimeField(source='start_time', read_only=True, format='%H:%M')
+    endTime = serializers.TimeField(source='end_time', read_only=True, format='%H:%M')
+    createdAt = serializers.DateField(source='date_log', read_only=True)
+    isRunning = serializers.BooleanField(source='is_running', read_only=True)
+    lastStartedAt = serializers.DateTimeField(source='last_started_at', read_only=True)
+    
+    # Return empty subtasks list to satisfy frontend interface without recursion
+    subtasks = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Task
+        fields = [
+            'id', 'parentId', 'title', 'description', 'category', 'status',
+            'timeSpent', 'startTime', 'endTime', 'createdAt', 'subtasks', 
+            'isRunning', 'lastStartedAt', 'userId'
+        ]
+        
+    def get_subtasks(self, obj):
+        return []

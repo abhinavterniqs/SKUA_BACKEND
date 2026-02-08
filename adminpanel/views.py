@@ -3,12 +3,12 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 from drf_spectacular.utils import extend_schema, extend_schema_view
 
-from .models import Role, Department
+from .models import Role, Department, Location
 from .permissions import IsAdmin
 from agent_api.models import Agent
 from agent_api.models_activity import DailyActivity, MonthlyActivity
 from .serializers import (
-    RoleSerializer, DepartmentSerializer, CustomTokenObtainPairSerializer,
+    RoleSerializer, DepartmentSerializer, LocationSerializer, CustomTokenObtainPairSerializer,
     AgentSerializer, AgentDetailSerializer
 )
 
@@ -80,6 +80,34 @@ class DepartmentViewSet(viewsets.ModelViewSet):
         if department.users.exists(): # 'users' related_name
              return Response(
                 {"error": "Cannot delete department because it has users assigned."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        return super().destroy(request, *args, **kwargs)
+
+@extend_schema_view(
+    list=extend_schema(summary="List all locations", tags=["Locations"]),
+    create=extend_schema(summary="Create a new location", tags=["Locations"]),
+    retrieve=extend_schema(summary="Get location details", tags=["Locations"]),
+    update=extend_schema(summary="Update a location", tags=["Locations"]),
+    partial_update=extend_schema(summary="Partial update a location", tags=["Locations"]),
+    destroy=extend_schema(summary="Delete a location", tags=["Locations"]),
+)
+class LocationViewSet(viewsets.ModelViewSet):
+    """
+    Manage Locations. Only accessible by Admins.
+    """
+    queryset = Location.objects.all()
+    serializer_class = LocationSerializer
+    permission_classes = [IsAdmin]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name']
+
+    def destroy(self, request, *args, **kwargs):
+        location = self.get_object()
+        # Prevent deletion if users are assigned
+        if location.users.exists(): # 'users' related_name
+             return Response(
+                {"error": "Cannot delete location because it has users assigned."},
                 status=status.HTTP_400_BAD_REQUEST
             )
         return super().destroy(request, *args, **kwargs)
